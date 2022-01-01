@@ -30,3 +30,26 @@ class:
         name: busy
         age: 21
         sex: true
+
+    map:
+        busy:
+            name: hxf
+            age: 22
+            sex: true
+
+    vec_map:
+        busy1:
+            - name: busy1
+              age: 22
+              sex: true
+            - name: busy2
+              age: 21
+              sex: false
+
+        busy2:
+            - name: busy1
+              age: 22
+              sex: true
+            - name: busy2
+              age: 21
+              sex: false

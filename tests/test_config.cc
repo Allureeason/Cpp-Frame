@@ -7,6 +7,7 @@
 
 #include <yaml-cpp/yaml.h>
 
+const char* path = "/home/busy/workspace/hxf/conf/log.yml";
 
  hxf::ConfigVar<int>::ptr g_int_value_config
      = hxf::Config::Lookup("system.port", (int)8080, "system port");
@@ -58,7 +59,7 @@ void print_yaml(const YAML::Node& node, int level) {
 }
 
 void test_yaml() {
-    YAML::Node root = YAML::LoadFile("/home/busy/workspace/hxf/conf/log.yml"); 
+    YAML::Node root = YAML::LoadFile(path); 
     //print_yaml(root, 0);
     hxf::Config::LoadFromYaml(root);
 }
@@ -88,7 +89,7 @@ void test_config() {
     XX_M(g_map_int_value_config, map_int, before);
     XX_M(g_umap_int_value_config, umap_int, before);
 
-    YAML::Node root = YAML::LoadFile("/home/busy/workspace/hxf/conf/log.yml"); 
+    YAML::Node root = YAML::LoadFile(path); 
     hxf::Config::LoadFromYaml(root);
 
     XX(g_vec_int_value_config, vec_int, after);
@@ -155,18 +156,42 @@ public:
 
 }
 
+
 hxf::ConfigVar<Person>::ptr g_person =
     hxf::Config::Lookup("class.person", Person(), "system person");
 
+hxf::ConfigVar<std::map<std::string, Person> >::ptr g_person_map =
+    hxf::Config::Lookup("class.map", std::map<std::string, Person>(), "system person");
+
+hxf::ConfigVar<std::map<std::string, std::vector<Person> > >::ptr g_person_vec_map =
+    hxf::Config::Lookup("class.vec_map", std::map<std::string, std::vector<Person> >(), "system person");
+
 void test_class() {
-    HXF_LOG_INFO(HXF_LOG_ROOT()) << "before: "<< g_person->getValue().toString()
-        << g_person->toString();
-    
-    YAML::Node root = YAML::LoadFile("/home/busy/workspace/hxf/conf/log.yml"); 
+    HXF_LOG_INFO(HXF_LOG_ROOT()) << "before: " << g_person->getValue().toString() << " - " << g_person->toString();
+
+#define XX_PM(g_var, prefix) \
+    { \
+        auto m = g_person_map->getValue(); \
+        for(auto& i : m) { \
+            HXF_LOG_INFO(HXF_LOG_ROOT()) <<  prefix << ": " << i.first << " - " << i.second.toString(); \
+        } \
+        HXF_LOG_INFO(HXF_LOG_ROOT()) <<  prefix << ": size=" << m.size(); \
+    }
+
+   //  g_person->addListener([](const Person& old_value, const Person& new_value){
+   //      HXF_LOG_INFO(HXF_LOG_ROOT()) << "old_value=" << old_value.toString()
+   //              << " new_value=" << new_value.toString();
+   //  });
+
+    XX_PM(g_person_map, "class.map before");
+    HXF_LOG_INFO(HXF_LOG_ROOT()) << "before: " << g_person_vec_map->toString();
+
+    YAML::Node root = YAML::LoadFile(path);
     hxf::Config::LoadFromYaml(root);
-    
-    HXF_LOG_INFO(HXF_LOG_ROOT()) << "after: "<< g_person->getValue().toString()
-        << g_person->toString();
+
+    HXF_LOG_INFO(HXF_LOG_ROOT()) << "after: " << g_person->getValue().toString() << " - " << g_person->toString();
+    XX_PM(g_person_map, "class.map after");
+    HXF_LOG_INFO(HXF_LOG_ROOT()) << "after: " << g_person_vec_map->toString();
 }
 
 
