@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC  -rdynamic -O0 -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-functional  -shared -Wl,-soname,libhxf.so -o lib/libhxf.so CMakeFiles/hxf.dir/hxf/log.cc.o CMakeFiles/hxf.dir/hxf/util.cc.o CMakeFiles/hxf.dir/hxf/config.cc.o 

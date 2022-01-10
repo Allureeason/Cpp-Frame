@@ -1,5 +1,0 @@
-/home/busy/workspace/Cpp-Frame/CMakeFiles/rebuild_cache.dir
-/home/busy/workspace/Cpp-Frame/CMakeFiles/edit_cache.dir
-/home/busy/workspace/Cpp-Frame/CMakeFiles/test.dir
-/home/busy/workspace/Cpp-Frame/CMakeFiles/test_config.dir
-/home/busy/workspace/Cpp-Frame/CMakeFiles/hxf.dir
