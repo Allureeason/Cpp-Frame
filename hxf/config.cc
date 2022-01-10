@@ -2,11 +2,9 @@
 #include <list>
 namespace hxf {
 
-Config::ConfigVarMap Config::s_datas;
-
 ConfigVarBase::ptr Config::LookupBase(const std::string& name) {
-    auto it = s_datas.find(name);
-    return it == s_datas.end() ? nullptr : it->second;
+    auto it = GetDatas().find(name);
+    return it == GetDatas().end() ? nullptr : it->second;
 }
 
 void ListAllMember(const std::string& prefix,

@@ -6,13 +6,13 @@
 
 #IncludeRegexTransform: 
 
-/home/busy/workspace/hxf/hxf/config.cc
+/home/busy/workspace/Cpp-Frame/hxf/config.cc
 config.h
-/home/busy/workspace/hxf/hxf/config.h
+/home/busy/workspace/Cpp-Frame/hxf/config.h
 list
 -
 
-/home/busy/workspace/hxf/hxf/config.h
+/home/busy/workspace/Cpp-Frame/hxf/config.h
 memory
 -
 string
@@ -22,7 +22,7 @@ map
 boost/lexical_cast.hpp
 -
 log.h
-/home/busy/workspace/hxf/hxf/log.h
+/home/busy/workspace/Cpp-Frame/hxf/log.h
 yaml-cpp/yaml.h
 -
 list
@@ -36,9 +36,25 @@ unordered_set
 vector
 -
 
-/home/busy/workspace/hxf/hxf/log.h
+/home/busy/workspace/Cpp-Frame/hxf/log.cc
+log.h
+/home/busy/workspace/Cpp-Frame/hxf/log.h
+tuple
+-
+map
+-
+functional
+-
+iostream
+-
+stdarg.h
+-
+config.h
+/home/busy/workspace/Cpp-Frame/hxf/config.h
+
+/home/busy/workspace/Cpp-Frame/hxf/log.h
 util.h
-/home/busy/workspace/hxf/hxf/util.h
+/home/busy/workspace/Cpp-Frame/hxf/util.h
 string
 -
 memory
@@ -56,13 +72,17 @@ list
 map
 -
 singleton.h
-/home/busy/workspace/hxf/hxf/singleton.h
+/home/busy/workspace/Cpp-Frame/hxf/singleton.h
 
-/home/busy/workspace/hxf/hxf/singleton.h
+/home/busy/workspace/Cpp-Frame/hxf/singleton.h
 memory
 -
 
-/home/busy/workspace/hxf/hxf/util.h
+/home/busy/workspace/Cpp-Frame/hxf/util.cc
+util.h
+/home/busy/workspace/Cpp-Frame/hxf/util.h
+
+/home/busy/workspace/Cpp-Frame/hxf/util.h
 unistd.h
 -
 pthread.h

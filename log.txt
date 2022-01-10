@@ -29,3 +29,8 @@
 2021-12-31 15:50:49	2939240	0	[WARN]	[root]	/home/busy/workspace/hxf/tests/test.cc:29	test hxf log WARN
 2021-12-31 15:50:49	2939240	0	[ERROR]	[root]	/home/busy/workspace/hxf/tests/test.cc:30	test hxf log ERROR
 2021-12-31 15:50:49	2939240	0	[FATAL]	[root]	/home/busy/workspace/hxf/tests/test.cc:31	test hxf log FATAL
+2022-01-09 00:36:22	586331	0	[DEBUG]	[root]	/home/busy/workspace/hxf/tests/test.cc:27	test hxf log DEBUG
+2022-01-09 00:36:22	586331	0	[INFO]	[root]	/home/busy/workspace/hxf/tests/test.cc:28	test hxf log INFO
+2022-01-09 00:36:22	586331	0	[WARN]	[root]	/home/busy/workspace/hxf/tests/test.cc:29	test hxf log WARN
+2022-01-09 00:36:22	586331	0	[ERROR]	[root]	/home/busy/workspace/hxf/tests/test.cc:30	test hxf log ERROR
+2022-01-09 00:36:22	586331	0	[FATAL]	[root]	/home/busy/workspace/hxf/tests/test.cc:31	test hxf log FATAL

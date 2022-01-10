@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC  -rdynamic -O3 -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-functional  -shared -Wl,-soname,libsrc.so -o lib/libsrc.so CMakeFiles/src.dir/src/log.cc.o CMakeFiles/src.dir/src/util.cc.o CMakeFiles/src.dir/src/config.cc.o 

@@ -6,5 +6,5 @@ CXX_FLAGS =  -rdynamic -O0 -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-u
 
 CXX_DEFINES = -Dhxf_EXPORTS
 
-CXX_INCLUDES = -I/home/busy/workspace/hxf/. 
+CXX_INCLUDES = -I/home/busy/workspace/Cpp-Frame/. 
 

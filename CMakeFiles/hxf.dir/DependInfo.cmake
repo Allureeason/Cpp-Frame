@@ -4,9 +4,9 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/busy/workspace/hxf/hxf/config.cc" "/home/busy/workspace/hxf/CMakeFiles/hxf.dir/hxf/config.cc.o"
-  "/home/busy/workspace/hxf/hxf/log.cc" "/home/busy/workspace/hxf/CMakeFiles/hxf.dir/hxf/log.cc.o"
-  "/home/busy/workspace/hxf/hxf/util.cc" "/home/busy/workspace/hxf/CMakeFiles/hxf.dir/hxf/util.cc.o"
+  "/home/busy/workspace/Cpp-Frame/hxf/config.cc" "/home/busy/workspace/Cpp-Frame/CMakeFiles/hxf.dir/hxf/config.cc.o"
+  "/home/busy/workspace/Cpp-Frame/hxf/log.cc" "/home/busy/workspace/Cpp-Frame/CMakeFiles/hxf.dir/hxf/log.cc.o"
+  "/home/busy/workspace/Cpp-Frame/hxf/util.cc" "/home/busy/workspace/Cpp-Frame/CMakeFiles/hxf.dir/hxf/util.cc.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

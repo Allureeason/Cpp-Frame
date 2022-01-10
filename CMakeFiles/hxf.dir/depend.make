@@ -7,6 +7,7 @@ CMakeFiles/hxf.dir/hxf/config.cc.o: hxf/log.h
 CMakeFiles/hxf.dir/hxf/config.cc.o: hxf/singleton.h
 CMakeFiles/hxf.dir/hxf/config.cc.o: hxf/util.h
 
+CMakeFiles/hxf.dir/hxf/log.cc.o: hxf/config.h
 CMakeFiles/hxf.dir/hxf/log.cc.o: hxf/log.cc
 CMakeFiles/hxf.dir/hxf/log.cc.o: hxf/log.h
 CMakeFiles/hxf.dir/hxf/log.cc.o: hxf/singleton.h
