@@ -91,6 +91,19 @@ std::stringstream& LogEventWrap::getSS() {
     return m_event->getSS();
 }
 
+void LogAppender::setFormatter(LogFormatter::ptr val) {
+    m_formatter = val;
+    if(m_formatter) {
+        m_hasFormatter = true;
+    } else {
+        m_hasFormatter = false;
+    }
+}
+
+LogFormatter::ptr LogAppender::getFormatter() {
+    return m_formatter;
+}
+
 class MessageFormatItem : public LogFormatter::FormatItem {
 public:
     MessageFormatItem(const std::string& str = "") {}
@@ -219,7 +232,7 @@ Logger::Logger(const std::string& name)
 
 void Logger::addAppender(LogAppender::ptr appender) {
     if (!appender->getFormatter()) {
-        appender->setFormatter(m_formatter);
+        appender->m_formatter = m_formatter;
     }
     m_appenders.push_back(appender);
 }
@@ -244,6 +257,12 @@ void Logger::setLevel(LogLevel::Level level) {
 
 void Logger::setFormatter(LogFormatter::ptr val) {
     m_formatter = val;
+    
+    for(auto& i : m_appenders) {
+        if(!i->m_hasFormatter) {
+            i->m_formatter = m_formatter;
+        }
+    }
 }
 
 void Logger::setFormatter(const std::string& val) {
@@ -315,7 +334,7 @@ void Logger::fatal(const LogEvent::ptr event) {
 
 FileLogAppender::FileLogAppender(const std::string& filename) 
     :m_filename(filename) {
-    
+    reopen();    
 }
 
 bool FileLogAppender::reopen() {
@@ -339,7 +358,7 @@ std::string FileLogAppender::toYamlString() {
     if(m_level != LogLevel::UNKNOW) {
         node["level"] = LogLevel::ToString(m_level);
     }
-    if(m_formatter) {
+    if(m_hasFormatter && m_formatter) {
         node["formatter"] = m_formatter->getPattern();
     }
     std::stringstream ss;
@@ -359,7 +378,7 @@ std::string StdoutLogAppender::toYamlString() {
     if(m_level != LogLevel::UNKNOW) {
         node["level"] = LogLevel::ToString(m_level);
     }
-    if(m_formatter) {
+    if(m_hasFormatter && m_formatter) {
         node["formatter"] = m_formatter->getPattern();
     }
     std::stringstream ss;
@@ -493,9 +512,12 @@ void LogFormatter::init() {
 
 
 LoggerManager::LoggerManager() { 
-   m_root.reset(new Logger("root"));
+    m_root.reset(new Logger("root"));
     m_root->addAppender(LogAppender::ptr(new StdoutLogAppender)); 
+    
     m_loggers[m_root->m_name] = m_root;
+    
+    init();
 }
 
 Logger::ptr LoggerManager::getLogger(const std::string& name) {
