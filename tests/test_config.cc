@@ -198,14 +198,21 @@ void test_class() {
 }
 
 void test_log() {
+    static hxf::Logger::ptr system_log = HXF_LOG_NAME("system");
     std::cout << hxf::LoggerMgr::GetInstance()->toYamlString() << std::endl;    
-
     const char* logfile = "/home/busy/workspace/hxf/bin/conf/log.yml";
     YAML::Node root = YAML::LoadFile(logfile);
     hxf::Config::LoadFromYaml(root);    
     std::cout << "==============" << std::endl;
     std::cout << hxf::LoggerMgr::GetInstance()->toYamlString() << std::endl;    
-    HXF_LOG_INFO(HXF_LOG_NAME("root")) << "this is a test, test log config.";
+
+    std::cout << "==============" << std::endl;
+    std::cout << root << std::endl; 
+    system_log->setFormatter("%d - %m%n");
+    HXF_LOG_INFO(system_log) << "hello system";
+    system_log->setFormatter("%d%T%t%T%F%T[%p]%T%m%n");
+    HXF_LOG_INFO(system_log) << "hello system";
+    
 }
 
 int main() {
