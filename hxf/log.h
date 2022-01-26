@@ -12,6 +12,7 @@
 #include <list>
 #include <map>
 #include "singleton.h"
+#include "thread.h"
 
 
 // 数据流形式
@@ -146,11 +147,14 @@ public:
 
     void setFormatter(LogFormatter::ptr val);
     LogFormatter::ptr getFormatter();
+
     void setLevel(LogLevel::Level v) { m_level = v;}
+    LogLevel::Level getLevel() const { return m_level;}
 protected:
     LogLevel::Level m_level = LogLevel::Level::DEBUG;
     LogFormatter::ptr m_formatter;
     bool m_hasFormatter = false;
+    Mutex m_mutex;
 };
 
 
@@ -188,6 +192,7 @@ private:
     std::list<LogAppender::ptr> m_appenders;
     LogFormatter::ptr m_formatter;
     Logger::ptr m_root;
+    Mutex m_mutex;
 };
 
 // 输出到控制台
@@ -221,6 +226,7 @@ public:
 private:
     Logger::ptr m_root;
     std::map<std::string, Logger::ptr> m_loggers;
+    Mutex m_mutex;
 };
 // 日志器管理类单例模式
 typedef hxf::Singleton<LoggerManager> LoggerMgr; 

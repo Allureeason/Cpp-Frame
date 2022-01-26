@@ -23,7 +23,15 @@ void fun1() {
 }
 
 void fun2() {
-    
+    while(true) {
+        HXF_LOG_INFO(g_logger) << "*********************************";    
+    }
+}
+
+void fun3() {
+    while(true) {
+        HXF_LOG_INFO(g_logger) << "=================================";
+    }
 }
 
 
@@ -33,8 +41,10 @@ int main(int argc, char** argv) {
 
     HXF_LOG_INFO(g_logger) << "thread create begin.";
     for(int i = 0; i < 5; i++) {
-        hxf::Thread::ptr thr(new hxf::Thread(fun1, "name" + std::to_string(i)));
-        thrs.push_back(thr);
+        hxf::Thread::ptr thr1(new hxf::Thread(fun2, "name" + std::to_string(i)));
+        hxf::Thread::ptr thr2(new hxf::Thread(fun3, "name" + std::to_string(i)));
+        thrs.push_back(thr1);
+        thrs.push_back(thr2);
     }
 
     for(auto& i : thrs) {
