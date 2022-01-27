@@ -36,11 +36,14 @@ void fun3() {
 
 
 int main(int argc, char** argv) {
+    g_logger->clearAppender();
+    hxf::LogAppender::ptr ap(new hxf::FileLogAppender("/home/busy/workspace/hxf/bin/mutex.txt"));
+    g_logger->addAppender(ap);
 
     std::vector<hxf::Thread::ptr> thrs;
 
     HXF_LOG_INFO(g_logger) << "thread create begin.";
-    for(int i = 0; i < 5; i++) {
+    for(int i = 0; i < 2; i++) {
         hxf::Thread::ptr thr1(new hxf::Thread(fun2, "name" + std::to_string(i)));
         hxf::Thread::ptr thr2(new hxf::Thread(fun3, "name" + std::to_string(i)));
         thrs.push_back(thr1);
