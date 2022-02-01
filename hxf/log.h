@@ -20,7 +20,7 @@
     if (logger->getLevel() <= level) \
         hxf::LogEventWrap(hxf::LogEvent::ptr(new hxf::LogEvent(logger, \
         level, __FILE__, __LINE__, 0, hxf::GetThreadId(),\
-        hxf::GetFiber(), time(0)))).getSS()
+        hxf::GetFiber(), time(0), hxf::Thread::GetName()))).getSS()
 
 #define HXF_LOG_DEBUG(logger) HXF_LOG_LEVEL(logger, hxf::LogLevel::DEBUG)
 #define HXF_LOG_INFO(logger) HXF_LOG_LEVEL(logger, hxf::LogLevel::INFO)
@@ -33,7 +33,7 @@
     if (logger->getLevel() <= level) \
         hxf::LogEventWrap(hxf::LogEvent::ptr(new hxf::LogEvent(logger, \
         level, __FILE__, __LINE__, 0, hxf::GetThreadId(),\
-        hxf::GetFiber(), time(0)))).getEvent()->format(fmt, __VA_ARGS__)
+        hxf::GetFiber(), time(0), hxf::Thread::GetName()))).getEvent()->format(fmt, __VA_ARGS__)
 
 #define HXF_LOG_FMT_DEBUG(logger, fmt, ...) HXF_LOG_FMT_LEVEL(logger, hxf::LogLevel::DEBUG, fmt, __VA_ARGS__)
 #define HXF_LOG_FMT_INFO(logger, fmt, ...) HXF_LOG_FMT_LEVEL(logger, hxf::LogLevel::INFO, fmt, __VA_ARGS__)
@@ -73,7 +73,8 @@ public:
     typedef std::shared_ptr<LogEvent> ptr;
     LogEvent(std::shared_ptr<Logger> m_logger, LogLevel::Level level,
             const char* file, uint32_t line, uint64_t elapse,
-            uint32_t thread_id, uint32_t fiber_id, uint64_t time);
+            uint32_t thread_id, uint32_t fiber_id,
+            uint64_t time, const std::string& thread_name);
     const char* getFile() const { return m_file;}
     uint32_t getLine() const { return m_line;}
     uint64_t getElapse() const { return m_elapse;}
@@ -81,6 +82,7 @@ public:
     uint32_t getFiberId() const { return m_fiberId;}
     uint64_t getTime() const { return m_time;}
     std::string getContent() const { return m_ss.str();}
+    const std::string& getThreadName() const { return m_threadName;}
     std::stringstream& getSS() { return m_ss;}
     std::shared_ptr<Logger> getLogger() const { return m_logger;}
     LogLevel::Level getLevel() const { return m_level;}
@@ -94,6 +96,7 @@ private:
     uint32_t m_threadId = 0;       // 线程号
     uint32_t m_fiberId = 0;        // 协程号
     uint64_t m_time = 0;           // 时间戳
+    std::string m_threadName;      // 线程名称
     std::stringstream m_ss;        // 内容字符串流
     std::shared_ptr<Logger> m_logger;
     LogLevel::Level m_level;
