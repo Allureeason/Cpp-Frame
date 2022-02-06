@@ -2,9 +2,8 @@
 #include "macro.h"
 #include "config.h"
 #include "log.h"
-
+#include "scheduler.h"
 #include <atomic>
-
 
 namespace hxf {
 
@@ -18,7 +17,6 @@ static thread_local Fiber::ptr t_threadFiber = nullptr;
 
 static ConfigVar<uint32_t>::ptr g_fiber_stack_size = 
     Config::Lookup<uint32_t>("fiber.stack_size", 128 * 1024, "fiber stack size");
-
 
 class MallocStackAllocator {
 public:
@@ -53,7 +51,7 @@ Fiber::Fiber() {
     HXF_LOG_DEBUG(g_logger) << "Fiber::Fiber main";
 }
 
-Fiber::Fiber(std::function<void()> cb, size_t stacksize)
+Fiber::Fiber(std::function<void()> cb, size_t stacksize, bool use_caller)
     :m_id(++s_fiber_id)
     ,m_cb(cb) {
     ++s_fiber_count;
@@ -67,7 +65,11 @@ Fiber::Fiber(std::function<void()> cb, size_t stacksize)
     m_ctx.uc_stack.ss_sp = m_stack;
     m_ctx.uc_stack.ss_size = m_stacksize;
 
-    makecontext(&m_ctx, &Fiber::MainFunc, 0);
+    if(!use_caller) {
+        makecontext(&m_ctx, &Fiber::MainFunc, 0);
+    } else {
+        makecontext(&m_ctx, &Fiber::CallerMainFunc, 0);
+    }
 
     HXF_LOG_DEBUG(g_logger) << "Fiber::Fiber id=" << m_id;
 }
@@ -76,7 +78,9 @@ Fiber::~Fiber() {
     --s_fiber_count;
     if(m_stack) {
         HXF_ASSERT(m_state == TERM
+                || m_state == EXCEPT
                 || m_state == INIT);
+
         StackAllocator::Dealloc(m_stack, m_stacksize);
     } else {
         HXF_ASSERT(!m_cb);
@@ -94,12 +98,13 @@ Fiber::~Fiber() {
 void Fiber::reset(std::function<void()> cb) {
     HXF_ASSERT(m_stack);
     HXF_ASSERT(m_state == INIT
+            || m_state == EXCEPT
             || m_state == TERM);
     m_cb = cb;
-
     if(getcontext(&m_ctx)) {
         HXF_ASSERT2(false, "getcontex");
     }
+    
     m_ctx.uc_link = nullptr;
     m_ctx.uc_stack.ss_sp = m_stack;
     m_ctx.uc_stack.ss_size = m_stacksize;
@@ -108,17 +113,32 @@ void Fiber::reset(std::function<void()> cb) {
     m_state = INIT;
 }
 
+void Fiber::call() {
+    SetThis(this);
+    m_state = EXEC;
+    if(swapcontext(&t_threadFiber->m_ctx, &m_ctx)) {
+        HXF_ASSERT2(false, "swapcontext");
+    }
+}
+
+void Fiber::back() {
+    SetThis(t_threadFiber.get());
+    if(swapcontext(&m_ctx, &t_threadFiber->m_ctx)) {
+        HXF_ASSERT2(false, "swapcontext");
+    }
+}
+
 void Fiber::swapIn() {
     SetThis(this);
     HXF_ASSERT(m_state != EXEC);
     m_state = EXEC;
-    if(swapcontext(&(t_threadFiber->m_ctx), &m_ctx)) {
+    if(swapcontext(&Scheduler::GetMainFiber()->m_ctx, &m_ctx)) {
         HXF_ASSERT2(false, "swapcontext");
     }
 }
 void Fiber::swapOut() {
-    SetThis(t_threadFiber.get());
-    if(swapcontext(&m_ctx, &(t_threadFiber->m_ctx))) {
+    SetThis(Scheduler::GetMainFiber());
+    if(swapcontext(&m_ctx, &Scheduler::GetMainFiber()->m_ctx)) {
         HXF_ASSERT2(false, "swapcontext");
     }
 }
@@ -150,7 +170,7 @@ void Fiber::YieldToReady() {
 void Fiber::YieldToHold() {
     Fiber::ptr cur = GetThis();
     HXF_ASSERT(cur->m_state == EXEC);
-    cur->m_state = HOLD;
+    //cur->m_state = HOLD;
     cur->swapOut();
 }
 
@@ -185,5 +205,35 @@ void Fiber::MainFunc() {
     raw_ptr->swapOut();
     HXF_ASSERT2(false, "never reach fiber_id=" + std::to_string(raw_ptr->getId()));
 }
+
+void Fiber::CallerMainFunc() {
+    Fiber::ptr cur = GetThis();
+    HXF_ASSERT(cur);
+    try {
+        cur->m_cb();
+        cur->m_cb = nullptr;
+        cur->m_state = TERM;
+    } catch (std::exception& ex) {
+        cur->m_state = EXCEPT;
+        HXF_LOG_ERROR(g_logger) << "Fiber Except: " << ex.what()
+            << " fiber_id=" << cur->getId()
+            << std::endl
+            << hxf::BacktraceToString();
+    } catch (...) {
+        cur->m_state = EXCEPT;
+        HXF_LOG_ERROR(g_logger) << "Fiber Except"
+            << " fiber_id=" << cur->getId()
+            << std::endl
+            << hxf::BacktraceToString();
+    }
+
+    auto raw_ptr = cur.get();
+    cur.reset();
+    raw_ptr->back();
+    HXF_ASSERT2(false, "never reach fiber_id=" + std::to_string(raw_ptr->getId()));
+
+}
+
+
 
 }

@@ -14,7 +14,6 @@ void run_in_fiber() {
 }
 
 
-
 void test_fiber() {
     HXF_LOG_INFO(g_logger) << "main begin -1";
     {
@@ -33,6 +32,9 @@ void test_fiber() {
 
 int main(int argc, char** argv) {
     hxf::Thread::SetName("main");
+    {
+        hxf::Fiber::ptr fiber(new hxf::Fiber(run_in_fiber));
+    }
     std::vector<hxf::Thread::ptr> thrs;
     for(int i = 0; i < 3; i++) {
         thrs.push_back(hxf::Thread::ptr(

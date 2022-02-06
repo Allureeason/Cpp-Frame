@@ -20,6 +20,7 @@ set(LIB_SRC
     hxf/config.cc
     hxf/fiber.cc
     hxf/log.cc
+    hxf/scheduler.cc
     hxf/thread.cc
     hxf/util.cc
     )
@@ -60,6 +61,10 @@ add_dependencies(test_fiber hxf)
 force_redefine_file_macro_for_sources(test_fiber)
 target_link_libraries(test_fiber ${LIB_LIB})
 
+add_executable(test_scheduler tests/test_scheduler.cc)
+add_dependencies(test_scheduler hxf)
+force_redefine_file_macro_for_sources(test_scheduler)
+target_link_libraries(test_scheduler ${LIB_LIB})
 
 # add_executable(test_other tests/test_other.cc )
 # add_dependencies(test_other hxf)

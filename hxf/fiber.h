@@ -5,11 +5,12 @@
 #include <memory>
 #include <functional>
 
-#include "thread.h"
-
 namespace hxf {
 
+class Scheduler;
+
 class Fiber : public std::enable_shared_from_this<Fiber> {
+friend class Scheduler;
 public:
     typedef std::shared_ptr<Fiber> ptr;
     enum State {
@@ -24,7 +25,7 @@ private:
     Fiber();
 
 public:
-    Fiber(std::function<void()> cb, size_t stacksize = 0);
+    Fiber(std::function<void()> cb, size_t stacksize = 0, bool use_call = false);
     ~Fiber();
 
     // 重置协程函数，并重置协程状态， INIT，READY
@@ -34,11 +35,14 @@ public:
     // 切换到后台执行
     void swapOut();
 
+    void back();
+    void call();
+
     uint64_t getId() const { return m_id;}
+    State getState() const { return m_state;}
 
 public:
     static uint64_t GetFiberId();
-
     // 设置当前协程
     static void SetThis(Fiber* p);
     // 返回当前协程
@@ -51,7 +55,7 @@ public:
     static uint64_t TotalFibers();
 
     static void MainFunc();
-
+    static void CallerMainFunc();
 private:
     uint64_t m_id = 0;
     uint32_t m_stacksize = 0;
