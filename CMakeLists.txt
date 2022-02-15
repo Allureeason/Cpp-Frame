@@ -19,9 +19,11 @@ find_library(YAMLCPP yaml-cpp)
 set(LIB_SRC
     hxf/config.cc
     hxf/fiber.cc
+    hxf/iomanager.cc
     hxf/log.cc
     hxf/scheduler.cc
     hxf/thread.cc
+    hxf/timer.cc
     hxf/util.cc
     )
 
@@ -65,6 +67,11 @@ add_executable(test_scheduler tests/test_scheduler.cc)
 add_dependencies(test_scheduler hxf)
 force_redefine_file_macro_for_sources(test_scheduler)
 target_link_libraries(test_scheduler ${LIB_LIB})
+
+add_executable(test_iomanager tests/test_iomanager.cc)
+add_dependencies(test_iomanager hxf)
+force_redefine_file_macro_for_sources(test_iomanager)
+target_link_libraries(test_iomanager ${LIB_LIB})
 
 # add_executable(test_other tests/test_other.cc )
 # add_dependencies(test_other hxf)

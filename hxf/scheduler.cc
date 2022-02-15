@@ -114,7 +114,7 @@ void Scheduler::setThis() {
 }
 
 void Scheduler::run() {
-    HXF_LOG_DEBUG(g_logger) << m_name << "run";
+    HXF_LOG_DEBUG(g_logger) << m_name << " run";
     setThis();
     if(hxf::GetThreadId() != m_rootThread) {
         t_scheduler_fiber = Fiber::GetThis().get();
