@@ -1,6 +1,7 @@
 #include "scheduler.h"
 #include "log.h"
 #include "macro.h"
+#include "hook.h"
 
 namespace hxf {
 
@@ -115,6 +116,7 @@ void Scheduler::setThis() {
 
 void Scheduler::run() {
     HXF_LOG_DEBUG(g_logger) << m_name << " run";
+    set_hook_enable(true);
     setThis();
     if(hxf::GetThreadId() != m_rootThread) {
         t_scheduler_fiber = Fiber::GetThis().get();

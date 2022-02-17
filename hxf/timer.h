@@ -16,7 +16,7 @@ friend class TimerManager;
 public:
     typedef std::shared_ptr<Timer> ptr;
 
-    bool cannal();
+    bool cancel();
     bool refresh();
     bool reset(uint64_t ms, bool from_now);
 private:

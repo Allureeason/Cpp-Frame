@@ -38,7 +38,7 @@ Timer::Timer(uint64_t next)
 
 }
 
-bool Timer::cannal() {
+bool Timer::cancel() {
     TimerManager::RWMutexType::WriteLock lock(m_manager->m_mutex);
     if(m_cb) {
         m_cb = nullptr;

@@ -19,6 +19,8 @@ find_library(YAMLCPP yaml-cpp)
 set(LIB_SRC
     hxf/config.cc
     hxf/fiber.cc
+    hxf/fd_manager.cc
+    hxf/hook.cc
     hxf/iomanager.cc
     hxf/log.cc
     hxf/scheduler.cc
@@ -33,8 +35,9 @@ add_library(hxf SHARED ${LIB_SRC})
 force_redefine_file_macro_for_sources(hxf) # __FILE__
 set(LIB_LIB
     hxf
-    ${PTHREAD}
-    ${YAMLCPP}
+    dl
+    pthread
+    yaml-cpp
     )
 
 
@@ -72,6 +75,12 @@ add_executable(test_iomanager tests/test_iomanager.cc)
 add_dependencies(test_iomanager hxf)
 force_redefine_file_macro_for_sources(test_iomanager)
 target_link_libraries(test_iomanager ${LIB_LIB})
+
+add_executable(test_hook tests/test_hook.cc)
+add_dependencies(test_hook hxf)
+force_redefine_file_macro_for_sources(test_hook)
+target_link_libraries(test_hook ${LIB_LIB})
+
 
 # add_executable(test_other tests/test_other.cc )
 # add_dependencies(test_other hxf)
