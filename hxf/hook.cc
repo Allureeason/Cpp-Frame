@@ -1,11 +1,6 @@
 #include "hook.h"
-#include <functional>
-#include <iostream>
 #include <dlfcn.h>
 #include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
 #include "config.h"
 #include "log.h"
@@ -76,7 +71,6 @@ bool is_hook_enable() {
 }
 
 void set_hook_enable(bool flag) {
-//    std::cout << "set hook flag=" << flag << std::endl;
     t_hook_enable = flag;
 }
 
@@ -97,8 +91,6 @@ static ssize_t do_io(int fd, OriginFun fun, const char* hook_fun_name,
     if(!ctx) {
         return fun(fd, std::forward<Args>(args)...);
     }
-    
-    HXF_LOG_INFO(g_logger) << "do_io ---<< " << hook_fun_name << " >>"; 
 
     if(ctx->isClose()) {
         errno = EBADF;
@@ -123,7 +115,6 @@ retry:
         std::weak_ptr<timer_info> winfo(tinfo);
 
         if(to != (uint64_t)-1) {
-            HXF_LOG_INFO(g_logger) << "do_io ---<< " << hook_fun_name << " >>"; 
             timer = iom->addConditionTimer(to, [winfo, fd, iom, event]() {
                 auto t = winfo.lock();
                 if(!t || t->cancelled) {
@@ -133,9 +124,9 @@ retry:
                 iom->cancelEvent(fd, (hxf::IOManager::Event)(event));
             }, winfo);
         }
-        HXF_LOG_INFO(g_logger) << "Fiber:" << hxf::Fiber::GetThis();
+
         int rt = iom->addEvent(fd, (hxf::IOManager::Event)(event));
-        if(rt) {
+        if(HXF_UNLIKELY(rt)) {
             HXF_LOG_ERROR(g_logger) << hook_fun_name << " addEvent("
                 << fd << ", " << event << ")";
             if(timer) {
@@ -143,9 +134,7 @@ retry:
             }
             return -1;
         } else {
-            HXF_LOG_INFO(g_logger) << "do_io ---<< " << hook_fun_name << " >>"; 
             hxf::Fiber::YieldToHold();
-            HXF_LOG_INFO(g_logger) << "do_io ---<< " << hook_fun_name << " >>"; 
             if(timer) {
                 timer->cancel();
             }
@@ -160,23 +149,22 @@ retry:
     return n;
 }
 
+
 extern "C" {
 #define XX(name) name ## _fun name ## _f = nullptr;
     HOOK_FUN(XX);
 #undef XX
 
 unsigned int sleep(unsigned int seconds) {
-    if(!hxf::is_hook_enable()) {
-//        std::cout << "sleep_f() << hook_enable = false" << std::endl;
+    if(!hxf::t_hook_enable) {
         return sleep_f(seconds);
     }
 
-//    std::cout << "sleep_f() << hook_enable = true" << std::endl;
     hxf::Fiber::ptr fiber = hxf::Fiber::GetThis();
     hxf::IOManager* iom = hxf::IOManager::GetThis();
-    iom->addTimer(seconds * 1000, [iom, fiber](){
-        iom->schedule(fiber);
-    });
+    iom->addTimer(seconds * 1000, std::bind((void(hxf::Scheduler::*)
+            (hxf::Fiber::ptr, int thread))&hxf::IOManager::schedule
+            ,iom, fiber, -1));
     hxf::Fiber::YieldToHold();
     return 0;
 }
@@ -185,12 +173,11 @@ int usleep(useconds_t usec) {
     if(!hxf::t_hook_enable) {
         return usleep_f(usec);
     }
-
     hxf::Fiber::ptr fiber = hxf::Fiber::GetThis();
     hxf::IOManager* iom = hxf::IOManager::GetThis();
     iom->addTimer(usec / 1000, std::bind((void(hxf::Scheduler::*)
-                    (hxf::Fiber::ptr, int thread))&hxf::IOManager::schedule,
-                    iom, fiber, -1));
+            (hxf::Fiber::ptr, int thread))&hxf::IOManager::schedule
+            ,iom, fiber, -1));
     hxf::Fiber::YieldToHold();
     return 0;
 }

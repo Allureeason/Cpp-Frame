@@ -1,16 +1,12 @@
 #include "iomanager.h"
 #include "macro.h"
 #include "log.h"
-#include "fd_manager.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/epoll.h>
-#include <unistd.h>
 #include <errno.h>
-#include <string.h>
 #include <fcntl.h>
+#include <sys/epoll.h>
+#include <string.h>
+#include <unistd.h>
 
 namespace hxf {
 
@@ -64,15 +60,15 @@ static std::ostream& operator<< (std::ostream& os, EPOLL_EVENTS events) {
 }
 
 IOManager::FdContext::EventContext& IOManager::FdContext::getContext(IOManager::Event event) {
-   switch(event) {
+    switch(event) {
         case IOManager::READ:
             return read;
         case IOManager::WRITE:
             return write;
         default:
             HXF_ASSERT2(false, "getContext");
-   }
-   throw std::invalid_argument("getConetxt invalid event");
+    }
+    throw std::invalid_argument("getContext invalid event");
 }
 
 void IOManager::FdContext::resetContext(EventContext& ctx) {
@@ -82,30 +78,37 @@ void IOManager::FdContext::resetContext(EventContext& ctx) {
 }
 
 void IOManager::FdContext::triggerEvent(IOManager::Event event) {
+    //HXF_LOG_INFO(g_logger) << "fd=" << fd
+    //    << " triggerEvent event=" << event
+    //    << " events=" << events;
     HXF_ASSERT(events & event);
-    events = (Event)(events & event);
+    //if(HXF_UNLIKELY(!(event & event))) {
+    //    return;
+    //}
+    events = (Event)(events & ~event);
     EventContext& ctx = getContext(event);
     if(ctx.cb) {
         ctx.scheduler->schedule(&ctx.cb);
     } else {
         ctx.scheduler->schedule(&ctx.fiber);
     }
+    ctx.scheduler = nullptr;
+    return;
 }
-
 
 IOManager::IOManager(size_t threads, bool use_caller, const std::string& name)
     :Scheduler(threads, use_caller, name) {
     m_epfd = epoll_create(5000);
     HXF_ASSERT(m_epfd > 0);
-    
+
     int rt = pipe(m_tickleFds);
     HXF_ASSERT(!rt);
 
-    struct epoll_event event;
-    memset(&event, 0, sizeof(event));
+    epoll_event event;
+    memset(&event, 0, sizeof(epoll_event));
     event.events = EPOLLIN | EPOLLET;
     event.data.fd = m_tickleFds[0];
-    
+
     rt = fcntl(m_tickleFds[0], F_SETFL, O_NONBLOCK);
     HXF_ASSERT(!rt);
 
@@ -132,7 +135,7 @@ IOManager::~IOManager() {
 
 void IOManager::contextResize(size_t size) {
     m_fdContexts.resize(size);
-    
+
     for(size_t i = 0; i < m_fdContexts.size(); ++i) {
         if(!m_fdContexts[i]) {
             m_fdContexts[i] = new FdContext;
@@ -155,7 +158,7 @@ int IOManager::addEvent(int fd, Event event, std::function<void()> cb) {
     }
 
     FdContext::MutexType::Lock lock2(fd_ctx->mutex);
-    if((fd_ctx->events & event)) {
+    if(HXF_UNLIKELY(fd_ctx->events & event)) {
         HXF_LOG_ERROR(g_logger) << "addEvent assert fd=" << fd
                     << " event=" << (EPOLL_EVENTS)event
                     << " fd_ctx.event=" << (EPOLL_EVENTS)fd_ctx->events;
@@ -167,15 +170,9 @@ int IOManager::addEvent(int fd, Event event, std::function<void()> cb) {
     epevent.events = EPOLLET | fd_ctx->events | event;
     epevent.data.ptr = fd_ctx;
 
-    if(hxf::FdMgr::GetInstance()->get(fd)->isClose()) {
-        HXF_LOG_ERROR(g_logger) << "fd=" << fd << " is closed";
-        return -1;
-    }
-
-    HXF_LOG_INFO(g_logger) << "m_epfd="<< hxf::FdMgr::GetInstance()->get(m_epfd, true);
     int rt = epoll_ctl(m_epfd, op, fd, &epevent);
     if(rt) {
-        HXF_LOG_ERROR(g_logger) << "Fiber:" << Fiber::GetThis() << " epoll_ctl(" << m_epfd << ", "
+        HXF_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd << ", "
             << (EpollCtlOp)op << ", " << fd << ", " << (EPOLL_EVENTS)epevent.events << "):"
             << rt << " (" << errno << ") (" << strerror(errno) << ") fd_ctx->events="
             << (EPOLL_EVENTS)fd_ctx->events;
@@ -199,71 +196,17 @@ int IOManager::addEvent(int fd, Event event, std::function<void()> cb) {
     }
     return 0;
 }
-//int IOManager::addEvent(int fd, Event event, std::function<void()> cb) {
-//    FdContext* fd_ctx = nullptr;
-//    RWMutexType::ReadLock lock(m_mutex);
-//    if((int)m_fdContexts.size() > fd) {
-//        fd_ctx = m_fdContexts[fd];
-//        lock.unlock();
-//    } else {
-//        lock.unlock();
-//        RWMutexType::WriteLock lock2(m_mutex);
-//        contextResize(fd * 1.5);
-//        fd_ctx = m_fdContexts[fd];
-//    }
-//    HXF_LOG_INFO(g_logger) << "fd_ctx:{fd=" << fd
-//        << " event=" << event
-//        << " fd_ctx->events=" << fd_ctx->events
-//        << "}";
-//
-//    FdContext::MutexType::Lock lock2(fd_ctx->mutex);
-//    if(fd_ctx->events & event) {
-//        HXF_LOG_ERROR(g_logger) << "addEvent assert fd=" << fd
-//            << " event:" << event
-//            << " fd_ctx->events" << fd_ctx->events;
-//        HXF_ASSERT(!(fd_ctx->events & event));
-//    }
-//
-//    int op = fd_ctx->events ? EPOLL_CTL_MOD : EPOLL_CTL_ADD;
-//    struct epoll_event epevent;
-//    epevent.events = EPOLLET | fd_ctx->events | event;
-//    epevent.data.ptr = fd_ctx;
-//
-//    int rt = epoll_ctl(m_epfd, op, fd, &epevent);
-//    if(rt) {
-//        HXF_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd << ", "
-//            << (EpollCtlOp)op << ", " << fd << ", " << (EPOLL_EVENTS)epevent.events << "):"
-//            << rt << " (" << errno << ") (" << strerror(errno) << ") fd_ctx->events="
-//            << (EPOLL_EVENTS)fd_ctx->events;
-//        return -1;
-//    }
-//    ++m_pendingEventCount;
-//    fd_ctx->events = (Event)(fd_ctx->events | event);
-//    FdContext::EventContext& event_ctx = fd_ctx->getContext(event);
-//    HXF_ASSERT(!event_ctx.scheduler
-//            && !event_ctx.fiber
-//            && !event_ctx.cb);
-//    event_ctx.scheduler = Scheduler::GetThis();
-//    if(cb) {
-//        event_ctx.cb.swap(cb);
-//    } else {
-//        event_ctx.fiber = Fiber::GetThis();
-//        HXF_ASSERT(event_ctx.fiber->getState() == Fiber::EXEC);
-//    }
-//    return 0;
-//}
 
 bool IOManager::delEvent(int fd, Event event) {
-    FdContext* fd_ctx = nullptr;
     RWMutexType::ReadLock lock(m_mutex);
     if((int)m_fdContexts.size() <= fd) {
         return false;
     }
+    FdContext* fd_ctx = m_fdContexts[fd];
     lock.unlock();
-    fd_ctx = m_fdContexts[fd];
 
     FdContext::MutexType::Lock lock2(fd_ctx->mutex);
-    if(!(fd_ctx->events & event)) {
+    if(HXF_UNLIKELY(!(fd_ctx->events & event))) {
         return false;
     }
 
@@ -275,10 +218,9 @@ bool IOManager::delEvent(int fd, Event event) {
 
     int rt = epoll_ctl(m_epfd, op, fd, &epevent);
     if(rt) {
-        HXF_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd
-            << "," << op << "," << fd << "," << (EPOLL_EVENTS)epevent.events
-            << "):" << rt << "(" << errno << ")" << "("
-            << strerror(errno) << ")";
+        HXF_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd << ", "
+            << (EpollCtlOp)op << ", " << fd << ", " << (EPOLL_EVENTS)epevent.events << "):"
+            << rt << " (" << errno << ") (" << strerror(errno) << ")";
         return false;
     }
 
@@ -296,9 +238,9 @@ bool IOManager::cancelEvent(int fd, Event event) {
     }
     FdContext* fd_ctx = m_fdContexts[fd];
     lock.unlock();
-    
+
     FdContext::MutexType::Lock lock2(fd_ctx->mutex);
-    if(!(fd_ctx->events & event)) {
+    if(HXF_UNLIKELY(!(fd_ctx->events & event))) {
         return false;
     }
 
@@ -310,12 +252,12 @@ bool IOManager::cancelEvent(int fd, Event event) {
 
     int rt = epoll_ctl(m_epfd, op, fd, &epevent);
     if(rt) {
-        HXF_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd
-            << "," << op << "," << fd << "," << (EPOLL_EVENTS)epevent.events
-            << "):" << rt << "(" << errno << ")" << "("
-            << strerror(errno) << ")";
+        HXF_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd << ", "
+            << (EpollCtlOp)op << ", " << fd << ", " << (EPOLL_EVENTS)epevent.events << "):"
+            << rt << " (" << errno << ") (" << strerror(errno) << ")";
         return false;
     }
+
     fd_ctx->triggerEvent(event);
     --m_pendingEventCount;
     return true;
@@ -341,13 +283,12 @@ bool IOManager::cancelAll(int fd) {
 
     int rt = epoll_ctl(m_epfd, op, fd, &epevent);
     if(rt) {
-        HXF_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd
-            << "," << op << "," << fd << "," << (EPOLL_EVENTS)epevent.events
-            << "):" << rt << "(" << errno << ")" << "("
-            << strerror(errno) << ")";
+        HXF_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd << ", "
+            << (EpollCtlOp)op << ", " << fd << ", " << (EPOLL_EVENTS)epevent.events << "):"
+            << rt << " (" << errno << ") (" << strerror(errno) << ")";
         return false;
     }
-   
+
     if(fd_ctx->events & READ) {
         fd_ctx->triggerEvent(READ);
         --m_pendingEventCount;
@@ -356,6 +297,7 @@ bool IOManager::cancelAll(int fd) {
         fd_ctx->triggerEvent(WRITE);
         --m_pendingEventCount;
     }
+
     HXF_ASSERT(fd_ctx->events == 0);
     return true;
 }
@@ -372,11 +314,12 @@ void IOManager::tickle() {
     HXF_ASSERT(rt == 1);
 }
 
-bool IOManager::stopping(uint64_t &timeout) {
+bool IOManager::stopping(uint64_t& timeout) {
     timeout = getNextTimer();
-    return timeout == ~0ull 
+    return timeout == ~0ull
         && m_pendingEventCount == 0
         && Scheduler::stopping();
+
 }
 
 bool IOManager::stopping() {
@@ -386,18 +329,20 @@ bool IOManager::stopping() {
 
 void IOManager::idle() {
     HXF_LOG_DEBUG(g_logger) << "idle";
-    const uint64_t MAX_EVENTS = 256;
-    epoll_event* events = new epoll_event[MAX_EVENTS]();
-    std::shared_ptr<epoll_event> shared_events(events, [](epoll_event* ptr) {
+    const uint64_t MAX_EVNETS = 256;
+    epoll_event* events = new epoll_event[MAX_EVNETS]();
+    std::shared_ptr<epoll_event> shared_events(events, [](epoll_event* ptr){
         delete[] ptr;
     });
 
     while(true) {
         uint64_t next_timeout = 0;
-        if(stopping(next_timeout)) {
-            HXF_LOG_INFO(g_logger) << "name=" << getName() << " idle stopping exit";
+        if(HXF_UNLIKELY(stopping(next_timeout))) {
+            HXF_LOG_INFO(g_logger) << "name=" << getName()
+                                     << " idle stopping exit";
             break;
         }
+
         int rt = 0;
         do {
             static const int MAX_TIMEOUT = 3000;
@@ -407,9 +352,7 @@ void IOManager::idle() {
             } else {
                 next_timeout = MAX_TIMEOUT;
             }
-            rt = epoll_wait(m_epfd, events, MAX_EVENTS, (int)next_timeout);
-            //HXF_LOG_DEBUG(g_logger) << "epoll_wait():" << rt
-            //    << " pendingEventCount=" << m_pendingEventCount;
+            rt = epoll_wait(m_epfd, events, MAX_EVNETS, (int)next_timeout);
             if(rt < 0 && errno == EINTR) {
             } else {
                 break;
@@ -419,11 +362,16 @@ void IOManager::idle() {
         std::vector<std::function<void()> > cbs;
         listExpiredCb(cbs);
         if(!cbs.empty()) {
+            //HXF_LOG_DEBUG(g_logger) << "on timer cbs.size=" << cbs.size();
             schedule(cbs.begin(), cbs.end());
             cbs.clear();
         }
 
-        for(int i = 0; i < rt; i++) {
+        //if(HXF_UNLIKELY(rt == MAX_EVNETS)) {
+        //    HXF_LOG_INFO(g_logger) << "epoll wait events=" << rt;
+        //}
+
+        for(int i = 0; i < rt; ++i) {
             epoll_event& event = events[i];
             if(event.data.fd == m_tickleFds[0]) {
                 uint8_t dummy[256];
@@ -455,11 +403,13 @@ void IOManager::idle() {
             int rt2 = epoll_ctl(m_epfd, op, fd_ctx->fd, &event);
             if(rt2) {
                 HXF_LOG_ERROR(g_logger) << "epoll_ctl(" << m_epfd << ", "
-                    << op << ", " << fd_ctx->fd << ", " << event.events << "):"
+                    << (EpollCtlOp)op << ", " << fd_ctx->fd << ", " << (EPOLL_EVENTS)event.events << "):"
                     << rt2 << " (" << errno << ") (" << strerror(errno) << ")";
                 continue;
             }
 
+            //HXF_LOG_INFO(g_logger) << " fd=" << fd_ctx->fd << " events=" << fd_ctx->events
+            //                         << " real_events=" << real_events;
             if(real_events & READ) {
                 fd_ctx->triggerEvent(READ);
                 --m_pendingEventCount;
@@ -468,11 +418,12 @@ void IOManager::idle() {
                 fd_ctx->triggerEvent(WRITE);
                 --m_pendingEventCount;
             }
-            
         }
+
         Fiber::ptr cur = Fiber::GetThis();
         auto raw_ptr = cur.get();
         cur.reset();
+
         raw_ptr->swapOut();
     }
 }

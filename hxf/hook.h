@@ -1,24 +1,28 @@
 #ifndef __HXF_HOOK_H__
 #define __HXF_HOOK_H__
 
-#include <unistd.h>
+#include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdint.h>
 #include <time.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 namespace hxf {
-    
+    /**
+     * @brief 当前线程是否hook
+     */
     bool is_hook_enable();
+    /**
+     * @brief 设置当前线程的hook状态
+     */
     void set_hook_enable(bool flag);
-
 }
 
 extern "C" {
 
-// sleep 
+//sleep
 typedef unsigned int (*sleep_fun)(unsigned int seconds);
 extern sleep_fun sleep_f;
 
