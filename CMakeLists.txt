@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 project(busy)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -fPIC -ggdb -std=c++11 -Wall -Wno-deprecated -Wno-builtin-macro-redefined -Wno-deprecated-declarations")
-set(CMAKE_C_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Wno-builtin-macro-redefined -Wno-deprecated-declarations")
+set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -fPIC -ggdb -std=c++11 -Wall -Wno-deprecated -Wno-builtin-macro-redefined -Wno-deprecated-declarations ")
+set(CMAKE_C_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -fPIC -ggdb -std=c11 -Wall -Wno-deprecated -Wno-builtin-macro-redefined -Wno-deprecated-declarations ")
 
 include(cmake/utils.cmake)
 
@@ -17,6 +17,7 @@ find_library(YAMLCPP yaml-cpp)
 
 
 set(LIB_SRC
+    hxf/address.cc
     hxf/config.cc
     hxf/fiber.cc
     hxf/fd_manager.cc
@@ -24,6 +25,7 @@ set(LIB_SRC
     hxf/iomanager.cc
     hxf/log.cc
     hxf/scheduler.cc
+    hxf/socket.cc
     hxf/thread.cc
     hxf/timer.cc
     hxf/util.cc
@@ -80,6 +82,16 @@ add_executable(test_hook tests/test_hook.cc)
 add_dependencies(test_hook hxf)
 force_redefine_file_macro_for_sources(test_hook)
 target_link_libraries(test_hook ${LIB_LIB})
+
+add_executable(test_address tests/test_address.cc)
+add_dependencies(test_address hxf)
+force_redefine_file_macro_for_sources(test_address)
+target_link_libraries(test_address ${LIB_LIB})
+
+add_executable(test_socket tests/test_socket.cc)
+add_dependencies(test_socket hxf)
+force_redefine_file_macro_for_sources(test_socket)
+target_link_libraries(test_socket ${LIB_LIB})
 
 
 # add_executable(test_other tests/test_other.cc )

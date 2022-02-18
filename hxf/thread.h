@@ -6,20 +6,17 @@
 #include <memory>
 #include <semaphore.h>
 #include <stdint.h>
+#include "noncopyable.h"
 
 namespace hxf {
 
-class Semaphore {
+class Semaphore : Noncopyable {
 public:
     Semaphore(uint32_t count = 0);
     ~Semaphore();
 
     void wait();
     void notify();
-private:
-    Semaphore(Semaphore &) = delete;
-    Semaphore(Semaphore &&) = delete;
-    Semaphore& operator= (Semaphore&) = delete;
 private:
     sem_t m_semaphore;
 };
@@ -121,7 +118,7 @@ private:
     bool m_locked;
 };
 
-class Mutex {
+class Mutex : Noncopyable {
 public:
     typedef ScopedLockImpl<Mutex> Lock;
 
@@ -146,7 +143,7 @@ private:
 };
 
 
-class Spinlock {
+class Spinlock : Noncopyable {
 public:
     typedef ScopedLockImpl<Spinlock> Lock;
     Spinlock() {
@@ -168,7 +165,7 @@ private:
     pthread_spinlock_t m_mutex;
 };
 
-class RWMutex {
+class RWMutex : Noncopyable {
 public:
     typedef ReadScopedLockImpl<RWMutex> ReadLock;
     typedef WriteScopedLockImpl<RWMutex> WriteLock;
@@ -198,7 +195,7 @@ private:
 };
 
 
-class Thread {
+class Thread : Noncopyable {
 public:
     typedef std::shared_ptr<Thread> ptr;
     Thread(std::function<void()> cb, const std::string& name);
@@ -213,10 +210,6 @@ public:
     static const std::string& GetName();
     static void SetName(const std::string& name);
 private:
-    Thread(Thread&) = delete;
-    Thread(Thread&&) = delete;
-    Thread& operator= (Thread&) = delete;
-
     static void* run(void* arg);
 private:
     pid_t m_id = -1;
