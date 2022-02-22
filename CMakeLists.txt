@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 2.8)
 
 project(busy)
@@ -18,15 +19,26 @@ find_library(YAMLCPP yaml-cpp)
 
 set(LIB_SRC
     hxf/address.cc
+    hxf/bytearray.cc
     hxf/config.cc
     hxf/fiber.cc
     hxf/fd_manager.cc
     hxf/hook.cc
+    hxf/http/http.cc
+    hxf/http/http11_parser.rl.cc
+    hxf/http/httpclient_parser.rl.cc
+    hxf/http/http_parser.cc
+    hxf/http/http_session.cc
+    hxf/http/http_server.cc
+    hxf/http/servlet.cc
     hxf/iomanager.cc
     hxf/log.cc
     hxf/scheduler.cc
     hxf/socket.cc
+    hxf/stream.cc
+    hxf/socket_stream.cc
     hxf/thread.cc
+    hxf/tcp_server.cc
     hxf/timer.cc
     hxf/util.cc
     )
@@ -93,11 +105,40 @@ add_dependencies(test_socket hxf)
 force_redefine_file_macro_for_sources(test_socket)
 target_link_libraries(test_socket ${LIB_LIB})
 
+add_executable(test_tcp_server tests/test_tcp_server.cc)
+add_dependencies(test_tcp_server hxf)
+force_redefine_file_macro_for_sources(test_tcp_server)
+target_link_libraries(test_tcp_server ${LIB_LIB})
 
-# add_executable(test_other tests/test_other.cc )
-# add_dependencies(test_other hxf)
-# force_redefine_file_macro_for_sources(test_other)
-# target_link_libraries(test_other ${LIB_LIB})
+add_executable(test_bytearray tests/test_bytearray.cc)
+add_dependencies(test_bytearray hxf)
+force_redefine_file_macro_for_sources(test_bytearray)
+target_link_libraries(test_bytearray ${LIB_LIB})
+
+add_executable(test_http tests/test_http.cc)
+add_dependencies(test_http hxf)
+force_redefine_file_macro_for_sources(test_http)
+target_link_libraries(test_http ${LIB_LIB})
+
+add_executable(test_http_parser tests/test_http_parser.cc)
+add_dependencies(test_http_parser hxf)
+force_redefine_file_macro_for_sources(test_http_parser)
+target_link_libraries(test_http_parser ${LIB_LIB})
+
+add_executable(test_http_server tests/test_http_server.cc)
+add_dependencies(test_http_server hxf)
+force_redefine_file_macro_for_sources(test_http_server)
+target_link_libraries(test_http_server ${LIB_LIB})
+
+
+################ example #############
+
+add_executable(echo_server example/echo_server.cc)
+add_dependencies(echo_server hxf)
+force_redefine_file_macro_for_sources(echo_server)
+target_link_libraries(echo_server ${LIB_LIB})
+
+
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)

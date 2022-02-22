@@ -345,7 +345,7 @@ Address::ptr Socket::getLocalAddress() {
             break;
     }
     socklen_t addrlen = result->getAddrLen();
-    if(getpeername(m_sock, result->getAddr(), &addrlen)) {
+    if(getsockname(m_sock, result->getAddr(), &addrlen)) {
         HXF_LOG_ERROR(g_logger) << "getpeername error sock=" << m_sock
             << " errno=" << errno << " strerror=" << strerror(errno);
         return Address::ptr(new UnknownAddress(m_family));
@@ -441,5 +441,8 @@ bool Socket::init(int sock) {
     return false;
 }
 
+std::ostream& operator<<(std::ostream& os, const Socket& sock) {
+    return sock.dump(os);
+}
 
 }

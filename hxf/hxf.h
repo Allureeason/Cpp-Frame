@@ -2,6 +2,7 @@
 #define __HXF_NORMALLY_H__
 
 #include "address.h"
+#include "bytearray.h"
 #include "log.h"
 #include "fd_manager.h"
 #include "fiber.h"
