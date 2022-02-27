@@ -31,6 +31,10 @@ void HttpServer::handleClient(Socket::ptr client) {
                     ,req->isClose() || !m_isKeepalive));
         m_dispatch->handle(req, rsp, session);
         rsp->setHeader("Server", getName());
+
+        //HXF_LOG_INFO(g_logger) << "this response ready send:" << std::endl
+        //    << *rsp;
+
         session->sendResponse(rsp);
         if(!m_isKeepalive || req->isClose()) {
             break;

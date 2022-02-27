@@ -202,6 +202,8 @@ std::ostream& HttpResponse::dump(std::ostream& os) const {
        << "."
        << ((uint32_t)(m_version & 0x0F))
        << " "
+       << (uint32_t)m_status
+       << " "
        << (m_reason.empty() ? HttpStatusToString(m_status) : m_reason)
        << "\r\n";
     

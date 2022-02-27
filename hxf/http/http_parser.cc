@@ -164,7 +164,7 @@ int HttpRequestParser::isFinished() {
     return http_parser_finish(&m_parser);
 }
 
-int HttpRequestParser::hasError() {
+bool HttpRequestParser::hasError() {
     return m_error || http_parser_has_error(&m_parser);
 }
 
@@ -247,7 +247,9 @@ int HttpResponseParser::isFinished() {
     return httpclient_parser_finish(&m_parser);
 }
 
-int HttpResponseParser::hasError() {
+bool HttpResponseParser::hasError() {
+    HXF_LOG_INFO(g_logger) << "m_error=" << m_error
+        << " m_parser.error=" << httpclient_parser_has_error(&m_parser);
     return m_error || httpclient_parser_has_error(&m_parser);
 }
 

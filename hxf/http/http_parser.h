@@ -20,7 +20,7 @@ public:
 
     size_t execute(char* data, size_t len);
     int isFinished();
-    int hasError();
+    bool hasError();
     uint64_t getContentLength();
     HttpRequest::ptr getData() const { return m_data;}
     const http_parser& getParser() const { return m_parser;}
@@ -41,7 +41,7 @@ public:
 
     size_t execute(char* data, size_t len, bool chunck);
     int isFinished();
-    int hasError();
+    bool hasError();
     uint64_t getContentLength();
     HttpResponse::ptr getData() const { return m_data;}
     const httpclient_parser& getParser() const { return m_parser;}

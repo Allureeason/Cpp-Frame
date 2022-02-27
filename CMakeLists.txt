@@ -29,6 +29,7 @@ set(LIB_SRC
     hxf/http/httpclient_parser.rl.cc
     hxf/http/http_parser.cc
     hxf/http/http_session.cc
+    hxf/http/http_connection.cc
     hxf/http/http_server.cc
     hxf/http/servlet.cc
     hxf/iomanager.cc
@@ -129,6 +130,11 @@ add_executable(test_http_server tests/test_http_server.cc)
 add_dependencies(test_http_server hxf)
 force_redefine_file_macro_for_sources(test_http_server)
 target_link_libraries(test_http_server ${LIB_LIB})
+
+add_executable(test_http_connection tests/test_http_connection.cc)
+add_dependencies(test_http_connection hxf)
+force_redefine_file_macro_for_sources(test_http_connection)
+target_link_libraries(test_http_connection ${LIB_LIB})
 
 
 ################ example #############
