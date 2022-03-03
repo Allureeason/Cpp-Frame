@@ -42,6 +42,7 @@ set(LIB_SRC
     hxf/tcp_server.cc
     hxf/timer.cc
     hxf/util.cc
+    hxf/uri.rl.cc
     )
 
 
@@ -144,6 +145,12 @@ add_dependencies(echo_server hxf)
 force_redefine_file_macro_for_sources(echo_server)
 target_link_libraries(echo_server ${LIB_LIB})
 
+################ sample #############
+
+add_executable(my_http_server sample/my_http_server.cc)
+add_dependencies(my_http_server hxf)
+force_redefine_file_macro_for_sources(my_http_server)
+target_link_libraries(my_http_server ${LIB_LIB})
 
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

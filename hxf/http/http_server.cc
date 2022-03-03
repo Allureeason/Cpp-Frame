@@ -17,12 +17,12 @@ HttpServer::HttpServer(bool keepalive
 }
 
 void HttpServer::handleClient(Socket::ptr client) {
-    HXF_LOG_INFO(g_logger) << "handleClient " << *client;
+    HXF_LOG_DEBUG(g_logger) << "handleClient " << *client;
     HttpSession::ptr session(new HttpSession(client));
     do {
         auto req = session->recvRequest();
         if(!req) {
-            HXF_LOG_WARN(g_logger) << "recv http request fail, errno="
+            HXF_LOG_DEBUG(g_logger) << "recv http request fail, errno="
                 << errno << " errstr=" << strerror(errno)
                 << " client:" << *client << " keep_alive=" << m_isKeepalive;
             break;
