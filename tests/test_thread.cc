@@ -1,61 +1,55 @@
-#include "../hxf/log.h"
-#include "../hxf/config.h"
-#include "../hxf/thread.h"
-#include "../hxf/util.h"
+#include "sylar/sylar.h"
+#include <unistd.h>
 
-#include <vector>
-
-static hxf::Logger::ptr g_logger = HXF_LOG_ROOT();
+sylar::Logger::ptr g_logger = SYLAR_LOG_ROOT();
 
 int count = 0;
-hxf::RWMutex s_rwmutex;
-hxf::Mutex s_mutex;
+//sylar::RWMutex s_mutex;
+sylar::Mutex s_mutex;
+
 void fun1() {
-    HXF_LOG_INFO(g_logger) << "name=" << hxf::Thread::GetName()
-                           << " this.name: " << hxf::Thread::GetThis()->getName()
-                           << " id: " << hxf::GetThreadId()
-                           << " this.id" << hxf::Thread::GetThis()->getId();
+    SYLAR_LOG_INFO(g_logger) << "name: " << sylar::Thread::GetName()
+                             << " this.name: " << sylar::Thread::GetThis()->getName()
+                             << " id: " << sylar::GetThreadId()
+                             << " this.id: " << sylar::Thread::GetThis()->getId();
+
     for(int i = 0; i < 100000; ++i) {
-        //hxf::RWMutex::WriteLock lock(s_rwmutex);
-        hxf::Mutex::Lock lock(s_mutex);
+        //sylar::RWMutex::WriteLock lock(s_mutex);
+        sylar::Mutex::Lock lock(s_mutex);
         ++count;
     }
 }
 
 void fun2() {
     while(true) {
-        HXF_LOG_INFO(g_logger) << "*********************************";    
+        SYLAR_LOG_INFO(g_logger) << "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
     }
 }
 
 void fun3() {
     while(true) {
-        HXF_LOG_INFO(g_logger) << "=================================";
+        SYLAR_LOG_INFO(g_logger) << "========================================";
     }
 }
 
-
 int main(int argc, char** argv) {
-    g_logger->clearAppender();
-    hxf::LogAppender::ptr ap(new hxf::FileLogAppender("/home/busy/workspace/hxf/bin/mutex.txt"));
-    g_logger->addAppender(ap);
+    SYLAR_LOG_INFO(g_logger) << "thread test begin";
+    YAML::Node root = YAML::LoadFile("/home/sylar/test/sylar/bin/conf/log2.yml");
+    sylar::Config::LoadFromYaml(root);
 
-    std::vector<hxf::Thread::ptr> thrs;
-
-    HXF_LOG_INFO(g_logger) << "thread create begin.";
-    for(int i = 0; i < 2; i++) {
-        hxf::Thread::ptr thr1(new hxf::Thread(fun2, "name" + std::to_string(i)));
-        hxf::Thread::ptr thr2(new hxf::Thread(fun3, "name" + std::to_string(i)));
-        thrs.push_back(thr1);
-        thrs.push_back(thr2);
+    std::vector<sylar::Thread::ptr> thrs;
+    for(int i = 0; i < 1; ++i) {
+        sylar::Thread::ptr thr(new sylar::Thread(&fun2, "name_" + std::to_string(i * 2)));
+        //sylar::Thread::ptr thr2(new sylar::Thread(&fun3, "name_" + std::to_string(i * 2 + 1)));
+        thrs.push_back(thr);
+        //thrs.push_back(thr2);
     }
 
-    for(auto& i : thrs) {
-        i->join();
+    for(size_t i = 0; i < thrs.size(); ++i) {
+        thrs[i]->join();
     }
-    HXF_LOG_INFO(g_logger) << "thread create end.";
-    HXF_LOG_INFO(g_logger) << "count = " << count;
-
+    SYLAR_LOG_INFO(g_logger) << "thread test end";
+    SYLAR_LOG_INFO(g_logger) << "count=" << count;
 
     return 0;
 }

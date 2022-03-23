@@ -1,31 +1,25 @@
-#include "hxf/scheduler.h"
-#include "hxf/log.h"
+#include "sylar/sylar.h"
 
-static hxf::Logger::ptr g_logger = HXF_LOG_ROOT();
+static sylar::Logger::ptr g_logger = SYLAR_LOG_ROOT();
 
 void test_fiber() {
     static int s_count = 5;
+    SYLAR_LOG_INFO(g_logger) << "test in fiber s_count=" << s_count;
 
     sleep(1);
-    if(--s_count) {
-        hxf::Scheduler::GetThis()->schedule(&test_fiber, hxf::GetThreadId());
+    if(--s_count >= 0) {
+        sylar::Scheduler::GetThis()->schedule(&test_fiber, sylar::GetThreadId());
     }
-    HXF_LOG_INFO(g_logger) << "test in fiber s_count=" << s_count;
 }
-
 
 int main(int argc, char** argv) {
-    HXF_LOG_INFO(g_logger) << "main";
-    hxf::Scheduler sc(3, false, "test");
+    SYLAR_LOG_INFO(g_logger) << "main";
+    sylar::Scheduler sc(3, false, "test");
     sc.start();
     sleep(2);
-
-    HXF_LOG_INFO(g_logger) << "scheduler";
+    SYLAR_LOG_INFO(g_logger) << "schedule";
     sc.schedule(&test_fiber);
-
     sc.stop();
-
-    HXF_LOG_INFO(g_logger) << "over";
+    SYLAR_LOG_INFO(g_logger) << "over";
     return 0;
 }
-

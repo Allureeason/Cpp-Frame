@@ -1,40 +1,29 @@
 #include <iostream>
-#include <string>
-#include "../hxf/log.h"
-#include "../hxf/util.h"
-#include "../hxf/singleton.h"
+#include "sylar/log.h"
+#include "sylar/util.h"
 
-int main() {
-    hxf::Logger::ptr logger(new hxf::Logger());
+int main(int argc, char** argv) {
+    sylar::Logger::ptr logger(new sylar::Logger);
+    logger->addAppender(sylar::LogAppender::ptr(new sylar::StdoutLogAppender));
 
-    hxf::LogAppender::ptr appender(new hxf::StdoutLogAppender);
-    hxf::LogAppender::ptr fileAppender(new hxf::FileLogAppender("./log.txt")); 
-//    std::string str = "hello hxf log";
+    sylar::FileLogAppender::ptr file_appender(new sylar::FileLogAppender("./log.txt"));
+    sylar::LogFormatter::ptr fmt(new sylar::LogFormatter("%d%T%p%T%m%n"));
+    file_appender->setFormatter(fmt);
+    file_appender->setLevel(sylar::LogLevel::ERROR);
 
-//    hxf::LogEvent::ptr event(new hxf::LogEvent(__FILE__, __LINE__, 0, (uint32_t)hxf::GetThreadId(), hxf::GetFiber(), time(0)));
+    logger->addAppender(file_appender);
 
-    logger->addAppender(appender);
-    logger->addAppender(fileAppender);
+    //sylar::LogEvent::ptr event(new sylar::LogEvent(__FILE__, __LINE__, 0, sylar::GetThreadId(), sylar::GetFiberId(), time(0)));
+    //event->getSS() << "hello sylar log";
+    //logger->log(sylar::LogLevel::DEBUG, event);
+    std::cout << "hello sylar log" << std::endl;
 
-//    logger->log(hxf::LogLevel::Level::DEBUG, event);
+    SYLAR_LOG_INFO(logger) << "test macro";
+    SYLAR_LOG_ERROR(logger) << "test macro error";
 
-   //    HXF_LOG_DEBUG(logger) << "hello hxf log -- debug";
-   //    HXF_LOG_INFO(logger) << "hello hxf log -- info";
-   //    HXF_LOG_WARN(logger) << "hello hxf log -- warn";
-   //    HXF_LOG_ERROR(logger) << "hello hxf log -- error";
-   //    HXF_LOG_FATAL(logger) << "hello hxf log -- fatal";
+    SYLAR_LOG_FMT_ERROR(logger, "test macro fmt error %s", "aa");
 
-    HXF_LOG_FMT_DEBUG(logger, "test hxf log %s", "DEBUG");
-    HXF_LOG_FMT_INFO(logger, "test hxf log %s", "INFO");
-    HXF_LOG_FMT_WARN(logger, "test hxf log %s", "WARN");
-    HXF_LOG_FMT_ERROR(logger, "test hxf log %s", "ERROR");
-    HXF_LOG_FMT_FATAL(logger, "test hxf log %s", "FATAL");
-
-    auto l = hxf::LoggerMgr::GetInstance()->getLogger("xx");
-    HXF_LOG_INFO(l) << "logger manager.";
-
-    HXF_LOG_INFO(HXF_LOG_ROOT()) << "Get root to log";
-
-
+    auto l = sylar::LoggerMgr::GetInstance()->getLogger("xx");
+    SYLAR_LOG_INFO(l) << "xxx";
     return 0;
 }

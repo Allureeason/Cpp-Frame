@@ -1,59 +1,59 @@
-#include "hxf/address.h"
-#include "hxf/log.h"
+#include "sylar/address.h"
+#include "sylar/log.h"
 
-hxf::Logger::ptr g_logger = HXF_LOG_ROOT();
+sylar::Logger::ptr g_logger = SYLAR_LOG_ROOT();
 
 void test() {
-    std::vector<hxf::Address::ptr> addrs;
+    std::vector<sylar::Address::ptr> addrs;
 
-    HXF_LOG_INFO(g_logger) << "begin";
-    bool v = hxf::Address::Lookup(addrs, "localhost:3080");
-    //bool v = hxf::Address::Lookup(addrs, "www.baidu.com", AF_INET);
-    //bool v = hxf::Address::Lookup(addrs, "www.hxf.top", AF_INET);
-    HXF_LOG_INFO(g_logger) << "end";
+    SYLAR_LOG_INFO(g_logger) << "begin";
+    bool v = sylar::Address::Lookup(addrs, "localhost:3080");
+    //bool v = sylar::Address::Lookup(addrs, "www.baidu.com", AF_INET);
+    //bool v = sylar::Address::Lookup(addrs, "www.sylar.top", AF_INET);
+    SYLAR_LOG_INFO(g_logger) << "end";
     if(!v) {
-        HXF_LOG_ERROR(g_logger) << "lookup fail";
+        SYLAR_LOG_ERROR(g_logger) << "lookup fail";
         return;
     }
 
     for(size_t i = 0; i < addrs.size(); ++i) {
-        HXF_LOG_INFO(g_logger) << i << " - " << addrs[i]->toString();
+        SYLAR_LOG_INFO(g_logger) << i << " - " << addrs[i]->toString();
     }
 
-    auto addr = hxf::Address::LookupAny("localhost:4080");
+    auto addr = sylar::Address::LookupAny("localhost:4080");
     if(addr) {
-        HXF_LOG_INFO(g_logger) << *addr;
+        SYLAR_LOG_INFO(g_logger) << *addr;
     } else {
-        HXF_LOG_ERROR(g_logger) << "error";
+        SYLAR_LOG_ERROR(g_logger) << "error";
     }
 }
 
 void test_iface() {
-    std::multimap<std::string, std::pair<hxf::Address::ptr, uint32_t> > results;
+    std::multimap<std::string, std::pair<sylar::Address::ptr, uint32_t> > results;
 
-    bool v = hxf::Address::GetInterfaceAddresses(results);
+    bool v = sylar::Address::GetInterfaceAddresses(results);
     if(!v) {
-        HXF_LOG_ERROR(g_logger) << "GetInterfaceAddresses fail";
+        SYLAR_LOG_ERROR(g_logger) << "GetInterfaceAddresses fail";
         return;
     }
 
     for(auto& i: results) {
-        HXF_LOG_INFO(g_logger) << i.first << " - " << i.second.first->toString() << " - "
+        SYLAR_LOG_INFO(g_logger) << i.first << " - " << i.second.first->toString() << " - "
             << i.second.second;
     }
 }
 
 void test_ipv4() {
-    //auto addr = hxf::IPAddress::Create("www.hxf.top");
-    auto addr = hxf::IPAddress::Create("127.0.0.8");
+    //auto addr = sylar::IPAddress::Create("www.sylar.top");
+    auto addr = sylar::IPAddress::Create("127.0.0.8");
     if(addr) {
-        HXF_LOG_INFO(g_logger) << addr->toString();
+        SYLAR_LOG_INFO(g_logger) << addr->toString();
     }
 }
 
 int main(int argc, char** argv) {
-    test_ipv4();
+    //test_ipv4();
     //test_iface();
-    //test();
+    test();
     return 0;
 }

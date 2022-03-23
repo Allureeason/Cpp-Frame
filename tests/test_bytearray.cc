@@ -1,24 +1,24 @@
-#include "hxf/bytearray.h"
-#include "hxf/hxf.h"
+#include "sylar/bytearray.h"
+#include "sylar/sylar.h"
 
-static hxf::Logger::ptr g_logger = HXF_LOG_ROOT();
+static sylar::Logger::ptr g_logger = SYLAR_LOG_ROOT();
 void test() {
 #define XX(type, len, write_fun, read_fun, base_len) {\
     std::vector<type> vec; \
     for(int i = 0; i < len; ++i) { \
         vec.push_back(rand()); \
     } \
-    hxf::ByteArray::ptr ba(new hxf::ByteArray(base_len)); \
+    sylar::ByteArray::ptr ba(new sylar::ByteArray(base_len)); \
     for(auto& i : vec) { \
         ba->write_fun(i); \
     } \
     ba->setPosition(0); \
     for(size_t i = 0; i < vec.size(); ++i) { \
         type v = ba->read_fun(); \
-        HXF_ASSERT(v == vec[i]); \
+        SYLAR_ASSERT(v == vec[i]); \
     } \
-    HXF_ASSERT(ba->getReadSize() == 0); \
-    HXF_LOG_INFO(g_logger) << #write_fun "/" #read_fun \
+    SYLAR_ASSERT(ba->getReadSize() == 0); \
+    SYLAR_LOG_INFO(g_logger) << #write_fun "/" #read_fun \
                     " (" #type " ) len=" << len \
                     << " base_len=" << base_len \
                     << " size=" << ba->getSize(); \
@@ -44,28 +44,28 @@ void test() {
     for(int i = 0; i < len; ++i) { \
         vec.push_back(rand()); \
     } \
-    hxf::ByteArray::ptr ba(new hxf::ByteArray(base_len)); \
+    sylar::ByteArray::ptr ba(new sylar::ByteArray(base_len)); \
     for(auto& i : vec) { \
         ba->write_fun(i); \
     } \
     ba->setPosition(0); \
     for(size_t i = 0; i < vec.size(); ++i) { \
         type v = ba->read_fun(); \
-        HXF_ASSERT(v == vec[i]); \
+        SYLAR_ASSERT(v == vec[i]); \
     } \
-    HXF_ASSERT(ba->getReadSize() == 0); \
-    HXF_LOG_INFO(g_logger) << #write_fun "/" #read_fun \
+    SYLAR_ASSERT(ba->getReadSize() == 0); \
+    SYLAR_LOG_INFO(g_logger) << #write_fun "/" #read_fun \
                     " (" #type " ) len=" << len \
                     << " base_len=" << base_len \
                     << " size=" << ba->getSize(); \
     ba->setPosition(0); \
-    HXF_ASSERT(ba->writeToFile("/tmp/" #type "_" #len "-" #read_fun ".dat")); \
-    hxf::ByteArray::ptr ba2(new hxf::ByteArray(base_len * 2)); \
-    HXF_ASSERT(ba2->readFromFile("/tmp/" #type "_" #len "-" #read_fun ".dat")); \
+    SYLAR_ASSERT(ba->writeToFile("/tmp/" #type "_" #len "-" #read_fun ".dat")); \
+    sylar::ByteArray::ptr ba2(new sylar::ByteArray(base_len * 2)); \
+    SYLAR_ASSERT(ba2->readFromFile("/tmp/" #type "_" #len "-" #read_fun ".dat")); \
     ba2->setPosition(0); \
-    HXF_ASSERT(ba->toString() == ba2->toString()); \
-    HXF_ASSERT(ba->getPosition() == 0); \
-    HXF_ASSERT(ba2->getPosition() == 0); \
+    SYLAR_ASSERT(ba->toString() == ba2->toString()); \
+    SYLAR_ASSERT(ba->getPosition() == 0); \
+    SYLAR_ASSERT(ba2->getPosition() == 0); \
 }
     XX(int8_t,  100, writeFint8, readFint8, 1);
     XX(uint8_t, 100, writeFuint8, readFuint8, 1);

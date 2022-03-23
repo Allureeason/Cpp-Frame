@@ -1,25 +1,25 @@
-#include "hxf/http/http_parser.h"
-#include "hxf/log.h"
+#include "sylar/http/http_parser.h"
+#include "sylar/log.h"
 
-static hxf::Logger::ptr g_logger = HXF_LOG_ROOT();
+static sylar::Logger::ptr g_logger = SYLAR_LOG_ROOT();
 
 const char test_request_data[] = "POST / HTTP/1.1\r\n"
-                                "Host: www.hxf.top\r\n"
+                                "Host: www.sylar.top\r\n"
                                 "Content-Length: 10\r\n\r\n"
                                 "1234567890";
 
 void test_request() {
-    hxf::http::HttpRequestParser parser;
+    sylar::http::HttpRequestParser parser;
     std::string tmp = test_request_data;
     size_t s = parser.execute(&tmp[0], tmp.size());
-    HXF_LOG_ERROR(g_logger) << "execute rt=" << s
+    SYLAR_LOG_ERROR(g_logger) << "execute rt=" << s
         << "has_error=" << parser.hasError()
         << " is_finished=" << parser.isFinished()
         << " total=" << tmp.size()
         << " content_length=" << parser.getContentLength();
     tmp.resize(tmp.size() - s);
-    HXF_LOG_INFO(g_logger) << parser.getData()->toString();
-    HXF_LOG_INFO(g_logger) << tmp;
+    SYLAR_LOG_INFO(g_logger) << parser.getData()->toString();
+    SYLAR_LOG_INFO(g_logger) << tmp;
 }
 
 const char test_response_data[] = "HTTP/1.1 200 OK\r\n"
@@ -38,10 +38,10 @@ const char test_response_data[] = "HTTP/1.1 200 OK\r\n"
         "</html>\r\n";
 
 void test_response() {
-    hxf::http::HttpResponseParser parser;
+    sylar::http::HttpResponseParser parser;
     std::string tmp = test_response_data;
     size_t s = parser.execute(&tmp[0], tmp.size(), true);
-    HXF_LOG_ERROR(g_logger) << "execute rt=" << s
+    SYLAR_LOG_ERROR(g_logger) << "execute rt=" << s
         << " has_error=" << parser.hasError()
         << " is_finished=" << parser.isFinished()
         << " total=" << tmp.size()
@@ -50,13 +50,13 @@ void test_response() {
 
     tmp.resize(tmp.size() - s);
 
-    HXF_LOG_INFO(g_logger) << parser.getData()->toString();
-    HXF_LOG_INFO(g_logger) << tmp;
+    SYLAR_LOG_INFO(g_logger) << parser.getData()->toString();
+    SYLAR_LOG_INFO(g_logger) << tmp;
 }
 
 int main(int argc, char** argv) {
     test_request();
-    HXF_LOG_INFO(g_logger) << "--------------";
+    SYLAR_LOG_INFO(g_logger) << "--------------";
     test_response();
     return 0;
 }

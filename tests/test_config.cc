@@ -1,57 +1,54 @@
-#include <iostream>
-#include <string>
-#include "../hxf/log.h"
-#include "../hxf/util.h"
-#include "../hxf/singleton.h"
-#include "../hxf/config.h"
-
+#include "sylar/config.h"
+#include "sylar/log.h"
 #include <yaml-cpp/yaml.h>
+#include "sylar/env.h"
+#include <iostream>
 
-const char* path = "/home/busy/workspace/hxf/bin/conf/test.yml";
+#if 1
+sylar::ConfigVar<int>::ptr g_int_value_config =
+    sylar::Config::Lookup("system.port", (int)8080, "system port");
 
- hxf::ConfigVar<int>::ptr g_int_value_config
-     = hxf::Config::Lookup("system.port", (int)8080, "system port");
- hxf::ConfigVar<float>::ptr g_float1_value_config
-     = hxf::Config::Lookup("system.port1", (float)8080, "system port1");
+sylar::ConfigVar<float>::ptr g_int_valuex_config =
+    sylar::Config::Lookup("system.port", (float)8080, "system port");
 
- hxf::ConfigVar<float>::ptr g_float_value_config
-     = hxf::Config::Lookup("system.value", (float)10.2f, "system value");
+sylar::ConfigVar<float>::ptr g_float_value_config =
+    sylar::Config::Lookup("system.value", (float)10.2f, "system value");
 
- hxf::ConfigVar<std::vector<int>>::ptr g_vec_int_value_config
-     = hxf::Config::Lookup("system.vec_int", std::vector<int>{1, 2}, "system vec_int");
+sylar::ConfigVar<std::vector<int> >::ptr g_int_vec_value_config =
+    sylar::Config::Lookup("system.int_vec", std::vector<int>{1,2}, "system int vec");
 
- hxf::ConfigVar<std::list<int>>::ptr g_list_int_value_config
-     = hxf::Config::Lookup("system.list_int", std::list<int>{1, 2}, "system list_int");
+sylar::ConfigVar<std::list<int> >::ptr g_int_list_value_config =
+    sylar::Config::Lookup("system.int_list", std::list<int>{1,2}, "system int list");
 
- hxf::ConfigVar<std::set<int>>::ptr g_set_int_value_config
-     = hxf::Config::Lookup("system.set_int", std::set<int>{1, 2}, "system set_int");
+sylar::ConfigVar<std::set<int> >::ptr g_int_set_value_config =
+    sylar::Config::Lookup("system.int_set", std::set<int>{1,2}, "system int set");
 
- hxf::ConfigVar<std::unordered_set<int>>::ptr g_uset_int_value_config
-     = hxf::Config::Lookup("system.uset_int", std::unordered_set<int>{1, 2}, "system uset_int");
+sylar::ConfigVar<std::unordered_set<int> >::ptr g_int_uset_value_config =
+    sylar::Config::Lookup("system.int_uset", std::unordered_set<int>{1,2}, "system int uset");
 
- hxf::ConfigVar<std::map<std::string, int>>::ptr g_map_int_value_config
-     = hxf::Config::Lookup("system.map_int", std::map<std::string, int>{{"k", 1},{"l",2}}, "system map_int");
+sylar::ConfigVar<std::map<std::string, int> >::ptr g_str_int_map_value_config =
+    sylar::Config::Lookup("system.str_int_map", std::map<std::string, int>{{"k",2}}, "system str int map");
 
- hxf::ConfigVar<std::unordered_map<std::string, int>>::ptr g_umap_int_value_config
-     = hxf::Config::Lookup("system.umap_int", std::unordered_map<std::string, int>{{"k", 1},{"l",2}}, "system map_int");
+sylar::ConfigVar<std::unordered_map<std::string, int> >::ptr g_str_int_umap_value_config =
+    sylar::Config::Lookup("system.str_int_umap", std::unordered_map<std::string, int>{{"k",2}}, "system str int map");
 
 void print_yaml(const YAML::Node& node, int level) {
     if(node.IsScalar()) {
-        HXF_LOG_DEBUG(HXF_LOG_ROOT()) << std::string(level * 4, ' ')
+        SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << std::string(level * 4, ' ')
             << node.Scalar() << " - " << node.Type() << " - " << level;
     } else if(node.IsNull()) {
-        HXF_LOG_DEBUG(HXF_LOG_ROOT()) << std::string(level * 4, ' ')
+        SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << std::string(level * 4, ' ')
             << "NULL - " << node.Type() << " - " << level;
     } else if(node.IsMap()) {
-        for (auto it = node.begin();
+        for(auto it = node.begin();
                 it != node.end(); ++it) {
-            HXF_LOG_DEBUG(HXF_LOG_ROOT()) << std::string(level * 4, ' ')
-                << it->first << " - " << it->second.Type() << " - " << level;
+            SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << std::string(level * 4, ' ')
+                    << it->first << " - " << it->second.Type() << " - " << level;
             print_yaml(it->second, level + 1);
         }
     } else if(node.IsSequence()) {
-        for (size_t i = 0; i < node.size(); ++i) {
-            HXF_LOG_INFO(HXF_LOG_ROOT()) << std::string(level * 4, ' ')
+        for(size_t i = 0; i < node.size(); ++i) {
+            SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << std::string(level * 4, ' ')
                 << i << " - " << node[i].Type() << " - " << level;
             print_yaml(node[i], level + 1);
         }
@@ -59,48 +56,61 @@ void print_yaml(const YAML::Node& node, int level) {
 }
 
 void test_yaml() {
-    YAML::Node root = YAML::LoadFile(path); 
+    YAML::Node root = YAML::LoadFile("/home/sylar/workspace/sylar/bin/conf/log.yml");
     //print_yaml(root, 0);
-    hxf::Config::LoadFromYaml(root);
+    //SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << root.Scalar();
+
+    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << root["test"].IsDefined();
+    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << root["logs"].IsDefined();
+    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << root;
 }
+
+void test_config() {
+    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "before: " << g_int_value_config->getValue();
+    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "before: " << g_float_value_config->toString();
 
 #define XX(g_var, name, prefix) \
     { \
         auto& v = g_var->getValue(); \
         for(auto& i : v) { \
-            HXF_LOG_INFO(HXF_LOG_ROOT()) << #prefix " " #name ": " << i; \
+            SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << #prefix " " #name ": " << i; \
         } \
+        SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << #prefix " " #name " yaml: " << g_var->toString(); \
     }
 
 #define XX_M(g_var, name, prefix) \
     { \
         auto& v = g_var->getValue(); \
         for(auto& i : v) { \
-            HXF_LOG_INFO(HXF_LOG_ROOT()) << #prefix " " #name ": {" << i.first \
-            << " - " << i.second << "}"; \
+            SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << #prefix " " #name ": {" \
+                    << i.first << " - " << i.second << "}"; \
         } \
+        SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << #prefix " " #name " yaml: " << g_var->toString(); \
     }
 
-void test_config() {
-    XX(g_vec_int_value_config, vec_int, before);
-    XX(g_list_int_value_config, list_int, before);
-    XX(g_set_int_value_config, set_int, before);
-    XX(g_uset_int_value_config, uset_int, before);
-    XX_M(g_map_int_value_config, map_int, before);
-    XX_M(g_umap_int_value_config, umap_int, before);
 
-    YAML::Node root = YAML::LoadFile(path); 
-    hxf::Config::LoadFromYaml(root);
+    XX(g_int_vec_value_config, int_vec, before);
+    XX(g_int_list_value_config, int_list, before);
+    XX(g_int_set_value_config, int_set, before);
+    XX(g_int_uset_value_config, int_uset, before);
+    XX_M(g_str_int_map_value_config, str_int_map, before);
+    XX_M(g_str_int_umap_value_config, str_int_umap, before);
 
-    XX(g_vec_int_value_config, vec_int, after);
-    XX(g_list_int_value_config, list_int, after);
-    XX(g_set_int_value_config, set_int, after);
-    XX(g_uset_int_value_config, uset_int, after);
-    XX_M(g_map_int_value_config, map_int, after);
-    XX_M(g_umap_int_value_config, umap_int, after);
-    
+    YAML::Node root = YAML::LoadFile("/home/sylar/workspace/sylar/bin/conf/test.yml");
+    sylar::Config::LoadFromYaml(root);
 
+    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "after: " << g_int_value_config->getValue();
+    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "after: " << g_float_value_config->toString();
+
+    XX(g_int_vec_value_config, int_vec, after);
+    XX(g_int_list_value_config, int_list, after);
+    XX(g_int_set_value_config, int_set, after);
+    XX(g_int_uset_value_config, int_uset, after);
+    XX_M(g_str_int_map_value_config, str_int_map, after);
+    XX_M(g_str_int_umap_value_config, str_int_umap, after);
 }
+
+#endif
 
 class Person {
 public:
@@ -125,7 +135,7 @@ public:
     }
 };
 
-namespace hxf {
+namespace sylar {
 
 template<>
 class LexicalCast<std::string, Person> {
@@ -156,76 +166,80 @@ public:
 
 }
 
+sylar::ConfigVar<Person>::ptr g_person =
+    sylar::Config::Lookup("class.person", Person(), "system person");
 
-hxf::ConfigVar<Person>::ptr g_person =
-    hxf::Config::Lookup("class.person", Person(), "system person");
+sylar::ConfigVar<std::map<std::string, Person> >::ptr g_person_map =
+    sylar::Config::Lookup("class.map", std::map<std::string, Person>(), "system person");
 
-hxf::ConfigVar<std::map<std::string, Person> >::ptr g_person_map =
-    hxf::Config::Lookup("class.map", std::map<std::string, Person>(), "system person");
-
-hxf::ConfigVar<std::map<std::string, std::vector<Person> > >::ptr g_person_vec_map =
-    hxf::Config::Lookup("class.vec_map", std::map<std::string, std::vector<Person> >(), "system person");
-
-
-
+sylar::ConfigVar<std::map<std::string, std::vector<Person> > >::ptr g_person_vec_map =
+    sylar::Config::Lookup("class.vec_map", std::map<std::string, std::vector<Person> >(), "system person");
 
 void test_class() {
-    HXF_LOG_INFO(HXF_LOG_ROOT()) << "before: " << g_person->getValue().toString() << " - " << g_person->toString();
+    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "before: " << g_person->getValue().toString() << " - " << g_person->toString();
 
 #define XX_PM(g_var, prefix) \
     { \
         auto m = g_person_map->getValue(); \
         for(auto& i : m) { \
-            HXF_LOG_INFO(HXF_LOG_ROOT()) <<  prefix << ": " << i.first << " - " << i.second.toString(); \
+            SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) <<  prefix << ": " << i.first << " - " << i.second.toString(); \
         } \
-        HXF_LOG_INFO(HXF_LOG_ROOT()) <<  prefix << ": size=" << m.size(); \
+        SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) <<  prefix << ": size=" << m.size(); \
     }
 
     g_person->addListener([](const Person& old_value, const Person& new_value){
-        HXF_LOG_INFO(HXF_LOG_ROOT()) << "old_value=" << old_value.toString()
+        SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "old_value=" << old_value.toString()
                 << " new_value=" << new_value.toString();
     });
 
     XX_PM(g_person_map, "class.map before");
-    HXF_LOG_INFO(HXF_LOG_ROOT()) << "before: " << g_person_vec_map->toString();
+    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "before: " << g_person_vec_map->toString();
 
-    YAML::Node root = YAML::LoadFile(path);
-    hxf::Config::LoadFromYaml(root);
+    YAML::Node root = YAML::LoadFile("/home/sylar/workspace/sylar/bin/conf/test.yml");
+    sylar::Config::LoadFromYaml(root);
 
-    HXF_LOG_INFO(HXF_LOG_ROOT()) << "after: " << g_person->getValue().toString() << " - " << g_person->toString();
+    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "after: " << g_person->getValue().toString() << " - " << g_person->toString();
     XX_PM(g_person_map, "class.map after");
-    HXF_LOG_INFO(HXF_LOG_ROOT()) << "after: " << g_person_vec_map->toString();
+    SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "after: " << g_person_vec_map->toString();
 }
 
 void test_log() {
-    static hxf::Logger::ptr system_log = HXF_LOG_NAME("system");
-    std::cout << hxf::LoggerMgr::GetInstance()->toYamlString() << std::endl;    
-    const char* logfile = "/home/busy/workspace/hxf/bin/conf/log.yml";
-    YAML::Node root = YAML::LoadFile(logfile);
-    hxf::Config::LoadFromYaml(root);    
-    std::cout << "==============" << std::endl;
-    std::cout << hxf::LoggerMgr::GetInstance()->toYamlString() << std::endl;    
+    static sylar::Logger::ptr system_log = SYLAR_LOG_NAME("system");
+    SYLAR_LOG_INFO(system_log) << "hello system" << std::endl;
+    std::cout << sylar::LoggerMgr::GetInstance()->toYamlString() << std::endl;
+    YAML::Node root = YAML::LoadFile("/home/sylar/workspace/sylar/bin/conf/log.yml");
+    sylar::Config::LoadFromYaml(root);
+    std::cout << "=============" << std::endl;
+    std::cout << sylar::LoggerMgr::GetInstance()->toYamlString() << std::endl;
+    std::cout << "=============" << std::endl;
+    std::cout << root << std::endl;
+    SYLAR_LOG_INFO(system_log) << "hello system" << std::endl;
 
-    std::cout << "==============" << std::endl;
-    std::cout << root << std::endl; 
     system_log->setFormatter("%d - %m%n");
-    HXF_LOG_INFO(system_log) << "hello system";
-    system_log->setFormatter("%d%T%t%T%F%T[%p]%T%m%n");
-    HXF_LOG_INFO(system_log) << "hello system";
-    
+    SYLAR_LOG_INFO(system_log) << "hello system" << std::endl;
 }
 
-int main() {
+void test_loadconf() {
+    sylar::Config::LoadFromConfDir("conf");
+}
 
-//  HXF_LOG_DEBUG(HXF_LOG_ROOT()) << "before "<< g_int_value_config.get();
-//  HXF_LOG_DEBUG(HXF_LOG_ROOT()) << g_float1_value_config.get();
-//  if (g_float_value_config) {
-//  HXF_LOG_INFO(HXF_LOG_ROOT()) << g_float_value_config->toString();
-//  HXF_LOG_INFO(HXF_LOG_ROOT()) << g_float_value_config->getValue();
-//  }
-  
+int main(int argc, char** argv) {
+    //test_yaml();
     //test_config();
     //test_class();
-    test_log();
+    //test_log();
+    sylar::EnvMgr::GetInstance()->init(argc, argv);
+    test_loadconf();
+    std::cout << " ==== " << std::endl;
+    sleep(10);
+    test_loadconf();
+    return 0;
+    sylar::Config::Visit([](sylar::ConfigVarBase::ptr var) {
+        SYLAR_LOG_INFO(SYLAR_LOG_ROOT()) << "name=" << var->getName()
+                    << " description=" << var->getDescription()
+                    << " typename=" << var->getTypeName()
+                    << " value=" << var->toString();
+    });
+
     return 0;
 }
